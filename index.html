@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Haz tu pedido · Printify Creative</title>
+<meta name="description" content="Cuéntanos qué necesitas y te enviamos el precio por WhatsApp.">
+<meta property="og:title" content="Haz tu pedido · Printify Creative">
+<meta property="og:description" content="Llena tu pedido en 1 minuto y te enviamos el precio por WhatsApp.">
+<meta property="og:image" content="https://printify-inventory.pages.dev/icon-512.png">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#304B80">
+<link rel="icon" href="https://printify-inventory.pages.dev/icon-192.png">
+<style>
+  :root { --azul:#22406f; --verde:#1f7a55; --gris:#475569; --borde:#cbd5e1; --fondo:#EEF3FB; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--fondo); font-family: Arial, Helvetica, sans-serif; color:#1e293b; }
+  main { max-width:520px; margin:0 auto; padding:20px 16px 40px; }
+  .tarjeta { background:#fff; border-radius:18px; padding:24px 20px; box-shadow:0 8px 30px rgba(34,64,111,.10); }
+  .logo { display:block; height:52px; margin:0 auto 10px; }
+  h1 { color:var(--azul); font-size:24px; margin:4px 0; text-align:center; }
+  .sub { text-align:center; color:var(--gris); margin:0 0 6px; font-size:15px; line-height:1.4; }
+  label, .etq { display:block; font-weight:700; font-size:15px; color:var(--azul); margin-top:18px; }
+  .ayuda { font-weight:400; color:#64748b; font-size:13px; }
+  input, textarea { width:100%; padding:13px; border:1px solid var(--borde); border-radius:10px; font:400 16px Arial, sans-serif; margin-top:6px; background:#fff; color:#0f172a; }
+  input:focus, textarea:focus { outline:2px solid #93b4e8; border-color:#5b7fc0; }
+  textarea { resize:vertical; min-height:96px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .chip { border:1px solid var(--borde); background:#f8fafc; color:var(--azul); border-radius:999px; padding:9px 13px; font:700 14px Arial, sans-serif; cursor:pointer; }
+  .chip[aria-pressed="true"] { background:var(--azul); color:#fff; border-color:var(--azul); }
+  .fila { display:grid; grid-template-columns: 120px 1fr; gap:12px; }
+  .cant { display:flex; align-items:center; margin-top:6px; border:1px solid var(--borde); border-radius:10px; overflow:hidden; }
+  .cant button { width:40px; height:48px; border:0; background:#f1f5f9; font-size:20px; color:var(--azul); cursor:pointer; }
+  .cant input { border:0; margin:0; text-align:center; padding:0; height:48px; border-radius:0; }
+  .rapidas { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+  .rapidas .chip { padding:7px 10px; font-size:13px; }
+  .enviar { margin-top:22px; width:100%; padding:16px; border-radius:12px; border:0; background:var(--verde); color:#fff; font:700 17px Arial, sans-serif; cursor:pointer; }
+  .enviar:disabled { opacity:.7; }
+  .error { color:#b42318; background:#fdecea; padding:12px; border-radius:10px; margin-top:14px; }
+  .pie { font-size:12px; color:#64748b; text-align:center; margin-top:14px; line-height:1.5; }
+  .trampa { position:absolute; left:-9999px; width:1px; height:1px; opacity:0; }
+  .listo { text-align:center; }
+  .listo h1 { color:var(--verde); }
+  .listo p { font-size:16px; color:#334155; line-height:1.5; }
+  .wa { display:block; margin-top:16px; padding:15px; border-radius:12px; background:#25D366; color:#fff; font-weight:700; font-size:16px; text-decoration:none; }
+  .pasos { text-align:left; background:#f8fafc; border-radius:12px; padding:12px 16px; margin-top:16px; font-size:14px; color:#334155; line-height:1.6; }
+  .otro { margin-top:14px; background:none; border:0; color:var(--azul); font-weight:700; font-size:15px; text-decoration:underline; cursor:pointer; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<main>
+  <div class="tarjeta">
+    <img class="logo" src="logo.png" alt="Printify Creative">
+
+    <form id="form" novalidate>
+      <h1>Haz tu pedido</h1>
+      <p class="sub">Llénalo en 1 minuto y te enviamos el precio por WhatsApp.</p>
+
+      <span class="etq">¿Qué necesitas? *</span>
+      <div class="chips" id="chips" role="group" aria-label="Tipo de producto"></div>
+
+      <label for="descripcion">Cuéntanos un poco más <span class="ayuda">(colores, texto, tamaño…)</span></label>
+      <textarea id="descripcion" maxlength="1000" placeholder="Ej. Tazas blancas con el logo de mi empresa"></textarea>
+
+      <div class="fila">
+        <div>
+          <span class="etq">Cantidad</span>
+          <div class="cant">
+            <button type="button" id="menos" aria-label="Menos">−</button>
+            <input id="cantidad" type="number" inputmode="numeric" min="1" value="1" aria-label="Cantidad">
+            <button type="button" id="mas" aria-label="Más">+</button>
+          </div>
+        </div>
+        <div>
+          <label for="para">¿Para cuándo?</label>
+          <input id="para" type="date">
+        </div>
+      </div>
+      <div class="rapidas" id="rapidas"></div>
+      <p class="ayuda" style="margin:6px 0 0">Normalmente entregamos en 3 a 8 días laborables.</p>
+
+      <label for="nombre">Tu nombre *</label>
+      <input id="nombre" autocomplete="name" maxlength="120" placeholder="Ej. María Pérez">
+
+      <label for="telefono">Tu WhatsApp *</label>
+      <input id="telefono" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="809-000-0000">
+
+      <input id="web" class="trampa" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+      <p id="error" class="error" role="alert" hidden></p>
+      <button class="enviar" id="enviar" type="submit">Enviar pedido</button>
+      <p class="pie">No pagas nada ahora. Te escribimos con el precio y, si te gusta, lo reservas con el 50%.<br>Usaremos tus datos solo para contactarte sobre este pedido.</p>
+    </form>
+
+    <div id="listo" class="listo" hidden>
+      <h1>¡Recibimos tu pedido!</h1>
+      <p id="listoTexto"></p>
+      <a id="wa" class="wa" target="_blank" rel="noopener">📎 Enviar logo o foto por WhatsApp</a>
+      <div class="pasos">
+        <strong>¿Qué sigue?</strong><br>
+        1. Te escribimos con el precio.<br>
+        2. Reservas con el 50% y te enviamos el diseño para aprobar.<br>
+        3. Lo retiras en la tienda o envías a alguien a buscarlo.
+      </div>
+      <button type="button" class="otro" id="otro">Hacer otro pedido</button>
+    </div>
+  </div>
+</main>
+<script>
+(function () {
+  var SUPABASE_URL = 'https://jikqsocyvkgnkuqvmksg.supabase.co';
+  var CLAVE = 'sb_publishable_jLQV12WmjRfOpocTygix6w_Y5gp5Wv_';
+  var WHATSAPP = '18494232947';
+  var CATEGORIAS = ['Tazas y termos', 'Camisetas y textiles', 'Tarjetas e impresos', 'Stickers y viniles', 'Servilletas y eventos', 'Regalos corporativos', 'Letreros y banners', 'Otro'];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var elegida = '';
+
+  function guardar(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function leer(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
+
+  // Botones de tipo de producto
+  CATEGORIAS.forEach(function (c) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = c; b.setAttribute('aria-pressed', 'false');
+    b.onclick = function () {
+      elegida = elegida === c ? '' : c;
+      Array.prototype.forEach.call($('chips').children, function (x) { x.setAttribute('aria-pressed', String(x.textContent === elegida)); });
+    };
+    $('chips').appendChild(b);
+  });
+
+  // Fechas
+  function iso(d) { return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
+  function sumarDias(n) { var d = new Date(); d.setDate(d.getDate() + n); return d; }
+  $('para').min = iso(new Date());
+  [['Esta semana', 5], ['En 2 semanas', 14], ['Sin prisa', 0]].forEach(function (r) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = r[0];
+    b.onclick = function () { $('para').value = r[1] ? iso(sumarDias(r[1])) : ''; };
+    $('rapidas').appendChild(b);
+  });
+
+  // Cantidad
+  function cant() { var n = parseInt($('cantidad').value, 10); return isNaN(n) || n < 1 ? 1 : n; }
+  $('menos').onclick = function () { $('cantidad').value = Math.max(1, cant() - 1); };
+  $('mas').onclick = function () { $('cantidad').value = cant() + 1; };
+
+  // Recordar nombre y teléfono para la próxima vez
+  $('nombre').value = leer('pf_nombre');
+  $('telefono').value = leer('pf_telefono');
+
+  function mostrarError(t) { $('error').textContent = t; $('error').hidden = false; $('error').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    $('error').hidden = true;
+    if ($('web').value) return;
+    var texto = $('descripcion').value.trim();
+    var descripcion = elegida && elegida !== 'Otro' ? (texto ? elegida + ': ' + texto : elegida) : texto;
+    var nombre = $('nombre').value.trim();
+    var tel = $('telefono').value.trim();
+    var digitos = tel.replace(/\D/g, '');
+    if (descripcion.length < 5) return mostrarError('Elige qué necesitas o cuéntanos un poco más.');
+    if (nombre.length < 2) return mostrarError('Escribe tu nombre.');
+    if (digitos.length < 10) return mostrarError('Escribe tu número de WhatsApp completo (10 dígitos).');
+
+    $('enviar').disabled = true; $('enviar').textContent = 'Enviando…';
+    fetch(SUPABASE_URL + '/rest/v1/rpc/registrar_pedido_web', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: CLAVE, Authorization: 'Bearer ' + CLAVE },
+      body: JSON.stringify({ p_nombre: nombre, p_telefono: tel, p_descripcion: descripcion, p_cantidad: cant(), p_para: $('para').value || null, p_notas: null })
+    }).then(function (r) {
+      return r.json().then(function (d) { return { ok: r.ok, d: d }; });
+    }).then(function (res) {
+      if (!res.ok) {
+        var m = String((res.d && res.d.message) || '');
+        throw new Error(/demasiados|espera|nombre|whatsapp|necesitas|cantidad|fecha/i.test(m) ? m : 'No pudimos recibir tu pedido. Inténtalo de nuevo o escríbenos por WhatsApp.');
+      }
+      guardar('pf_nombre', nombre); guardar('pf_telefono', tel);
+      var numero = res.d;
+      var primer = nombre.split(' ')[0];
+      $('listoTexto').innerHTML = '';
+      $('listoTexto').append('Gracias, ' + primer + '. Tu número de pedido es ');
+      var s = document.createElement('strong'); s.textContent = '#' + numero; $('listoTexto').append(s);
+      $('listoTexto').append('. En breve te escribimos por WhatsApp con el precio.');
+      $('wa').href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent('Hola, hice el pedido #' + numero + ' en el formulario. Aquí les envío el logo/foto:');
+      $('form').hidden = true; $('listo').hidden = false;
+      window.scrollTo(0, 0);
+    }).catch(function (err) {
+      mostrarError(err && err.message ? err.message : 'No pudimos recibir tu pedido. Revisa tu conexión e inténtalo de nuevo.');
+    }).finally(function () {
+      $('enviar').disabled = false; $('enviar').textContent = 'Enviar pedido';
+    });
+  });
+
+  $('otro').onclick = function () {
+    $('descripcion').value = ''; $('cantidad').value = 1; $('para').value = ''; elegida = '';
+    Array.prototype.forEach.call($('chips').children, function (x) { x.setAttribute('aria-pressed', 'false'); });
+    $('listo').hidden = true; $('form').hidden = false; window.scrollTo(0, 0);
+  };
+})();
+</script>
+</body>
+</html>
