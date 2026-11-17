@@ -66,6 +66,14 @@
   .listo h1 { color:var(--verde); }
   .listo p { font-size:16px; color:#334155; line-height:1.5; }
   .resumen { text-align:left; background:#f8fafc; border-radius:12px; padding:12px 14px; font-size:14px; line-height:1.6; margin-top:10px; }
+  .pago { margin-top:16px; text-align:left; border:1.5px solid #e7c9cb; border-radius:14px; padding:14px; background:#fffafa; }
+  .pagoTit { font-weight:700; color:var(--vino); font-size:17px; text-align:center; }
+  .montos { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+  .montos div { background:#fff; border:1px solid var(--borde); border-radius:10px; padding:10px; text-align:center; font-size:13px; color:var(--gris); }
+  .montos b { display:block; font-size:18px; color:#1e293b; margin-top:2px; }
+  .montos .abono b { color:var(--vino); }
+  .pagoTxt { font-size:14px; color:#334155; margin:12px 0 8px; line-height:1.45; }
+  .bancos { display:block; width:100%; max-width:420px; margin:0 auto; border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,.08); }
   .wa { display:block; margin-top:16px; padding:15px; border-radius:12px; background:#25D366; color:#fff; font-weight:700; font-size:16px; text-decoration:none; }
   .pasos { text-align:left; background:#f8fafc; border-radius:12px; padding:12px 16px; margin-top:14px; font-size:14px; color:#334155; line-height:1.6; }
   .otro { margin-top:14px; background:none; border:0; color:var(--azul); font-weight:700; font-size:15px; text-decoration:underline; cursor:pointer; }
@@ -110,11 +118,18 @@
       <h1>¡Recibimos tu pedido!</h1>
       <p id="listoTexto"></p>
       <div class="resumen" id="resumen"></div>
-      <a id="wa" class="wa" target="_blank" rel="noopener">📎 Enviar foto o detalle por WhatsApp</a>
+      <div class="pago" id="pago">
+        <div class="pagoTit">Para reservar tu pedido</div>
+        <div class="montos" id="montos"></div>
+        <p class="aviso" id="avisoConfirmar" hidden>Algunos precios están por confirmar. Te escribiremos con el total final; puedes esperar nuestro mensaje antes de transferir.</p>
+        <p class="pagoTxt">Transfiere el abono a cualquiera de estas cuentas y envíanos el comprobante por WhatsApp:</p>
+        <img class="bancos" src="datos-bancarios.jpg" alt="Datos bancarios de Printify Creative" loading="lazy">
+      </div>
+      <a id="wa" class="wa" target="_blank" rel="noopener">📎 Enviar comprobante por WhatsApp</a>
       <div class="pasos">
         <strong>¿Qué sigue?</strong><br>
-        1. Te escribimos para confirmar tu pedido.<br>
-        2. Reservas con el 50% y te enviamos el diseño para aprobar.<br>
+        1. Transfiere el abono y envíanos el comprobante.<br>
+        2. Te enviamos el diseño para aprobar y te confirmamos la fecha.<br>
         3. Lo retiras en la tienda o envías a alguien a buscarlo.
       </div>
       <button type="button" class="otro" id="otroPedido">Hacer otro pedido</button>
@@ -332,7 +347,17 @@
         var p = buscar(it.codigo);
         r.appendChild(el('div', { text: '• ' + it.cantidad + ' × ' + (it.codigo === 'otro' ? it.descripcion : p.nombre) + (it.diseno ? ' (' + it.diseno + ')' : '') }));
       });
-      $('wa').href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent('Hola, hice el pedido #' + numero + ' en el formulario.');
+      var totalPedido = 0, aConfirmar = false;
+      items.forEach(function (it) { var p = buscar(it.codigo); if (!p || p.precio == null) aConfirmar = true; else totalPedido += it.cantidad * p.precio; });
+      var abono = Math.round(totalPedido * 50) / 100;
+      var m = $('montos'); m.innerHTML = '';
+      var c1 = el('div', {}); c1.append(aConfirmar ? 'Total estimado' : 'Total'); c1.appendChild(el('b', { text: dinero(totalPedido) }));
+      var c2 = el('div', { className: 'abono' }); c2.append('Abono (50%)'); c2.appendChild(el('b', { text: dinero(abono) }));
+      m.appendChild(c1); m.appendChild(c2);
+      $('avisoConfirmar').hidden = !aConfirmar;
+      $('pago').hidden = totalPedido <= 0;
+      $('wa').href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent('Hola, hice el pedido #' + numero + ' en el formulario' + (totalPedido > 0 && !aConfirmar ? '. Aquí está el comprobante del abono de ' + dinero(abono) + ':' : '.'));
+      $('wa').textContent = totalPedido > 0 && !aConfirmar ? '📎 Enviar comprobante por WhatsApp' : '💬 Escribirnos por WhatsApp';
       $('form').hidden = true; $('barra').hidden = true; $('listo').hidden = false;
       window.scrollTo(0, 0);
     }).catch(function (err) {
